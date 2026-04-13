@@ -12,6 +12,6 @@ export async function DELETE(
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ success: false, error: 'Failed to delete item' }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Delete failed' }, { status: 500 })
   }
 }
