@@ -24,6 +24,15 @@ export type TMDBMovieDetails = TMDBMovie & {
     crew: { job: string; name: string }[]
     cast: { name: string }[]
   }
+  release_dates: {
+    results: {
+      iso_3166_1: string
+      release_dates: {
+        certification: string
+        type: number
+      }[]
+    }[]
+  }
 }
 
 async function tmdbFetch<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
@@ -44,6 +53,6 @@ export async function searchMovies(query: string): Promise<TMDBMovie[]> {
 
 export async function getMovieDetails(tmdbId: number): Promise<TMDBMovieDetails> {
   return tmdbFetch<TMDBMovieDetails>(`/movie/${tmdbId}`, {
-    append_to_response: 'credits',
+    append_to_response: 'credits,release_dates',
   })
 }

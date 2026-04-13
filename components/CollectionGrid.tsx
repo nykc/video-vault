@@ -15,6 +15,7 @@ export function CollectionGrid() {
     filtered,
     genres,
     formats,
+    mpaaRatings,
     hasActiveFilters,
     setFilter,
     clearFilters,
@@ -39,6 +40,7 @@ export function CollectionGrid() {
         filters={filters}
         genres={genres}
         formats={formats}
+        mpaaRatings={mpaaRatings}
         hasActiveFilters={hasActiveFilters}
         onFilter={setFilter}
         onClear={clearFilters}

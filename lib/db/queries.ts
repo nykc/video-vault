@@ -32,6 +32,7 @@ export type CollectionItem = {
   director: string | null
   cast: string | null
   tmdb_rating: number | null
+  mpaa_rating: string | null
   keywords: string | null
   created_at: string
 }
@@ -54,7 +55,6 @@ export async function addMovieToCollection(input: AddItemInput): Promise<void> {
     if (existing) {
       movieId = existing.id
     } else {
-      // Fetch full details from TMDB
       const details = await getMovieDetails(input.tmdbMovie.id)
 
       const director = details.credits?.crew
@@ -64,16 +64,30 @@ export async function addMovieToCollection(input: AddItemInput): Promise<void> {
 
       const cast = details.credits?.cast
         ?.slice(0, 10)
-        .map((c: { name: string }) => c.name)
+        .map((c) => c.name)
         .join(', ') ?? null
 
-      const genres = details.genres?.map((g) => g.name).join(', ') ?? null
+      const genres = details.genres
+        ?.map((g) => g.name)
+        .join(', ') ?? null
+
+      const mpaaRating = details.release_dates?.results
+        ?.find((r) => r.iso_3166_1 === 'US')
+        ?.release_dates
+        ?.find((d) => d.certification && d.type === 3)
+        ?.certification
+        ?? details.release_dates?.results
+        ?.find((r) => r.iso_3166_1 === 'US')
+        ?.release_dates
+        ?.find((d) => d.certification)
+        ?.certification
+        ?? null
 
       const result = db.prepare(`
         INSERT INTO movies (
           tmdb_id, title, year, poster_path, backdrop_path,
-          overview, runtime, genre, director, cast, tmdb_rating
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          overview, runtime, genre, director, cast, tmdb_rating, mpaa_rating
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         input.tmdbMovie.id,
         title,
@@ -85,7 +99,8 @@ export async function addMovieToCollection(input: AddItemInput): Promise<void> {
         genres,
         director,
         cast,
-        details.vote_average ?? null
+        details.vote_average ?? null,
+        mpaaRating
       )
       movieId = result.lastInsertRowid as number
     }
@@ -115,8 +130,9 @@ export function getCollection(): CollectionItem[] {
       m.runtime,
       m.genre,
       m.director,
-      m.cast,
+      m."cast",
       m.tmdb_rating,
+      m.mpaa_rating,
       m.keywords,
       ci.format,
       ci.condition,

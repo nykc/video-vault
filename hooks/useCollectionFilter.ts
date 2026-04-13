@@ -6,6 +6,7 @@ export type FilterState = {
   genre: string
   decade: string
   format: string
+  mpaa: string
 }
 
 const EMPTY_FILTERS: FilterState = {
@@ -13,6 +14,7 @@ const EMPTY_FILTERS: FilterState = {
   genre: '',
   decade: '',
   format: '',
+  mpaa: '',
 }
 
 export function useCollectionFilter(items: CollectionItem[]) {
@@ -20,7 +22,6 @@ export function useCollectionFilter(items: CollectionItem[]) {
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
-      // Text search — title, director, cast
       if (filters.search) {
         const q = filters.search.toLowerCase()
         const searchable = [
@@ -32,28 +33,28 @@ export function useCollectionFilter(items: CollectionItem[]) {
         if (!searchable.includes(q)) return false
       }
 
-      // Genre filter
       if (filters.genre) {
         if (!item.genre?.toLowerCase().includes(filters.genre.toLowerCase())) return false
       }
 
-      // Decade filter
       if (filters.decade) {
         const decade = parseInt(filters.decade)
         if (!item.year) return false
         if (item.year < decade || item.year >= decade + 10) return false
       }
 
-      // Format filter
       if (filters.format) {
         if (item.format !== filters.format) return false
+      }
+
+      if (filters.mpaa) {
+        if (item.mpaa_rating !== filters.mpaa) return false
       }
 
       return true
     })
   }, [items, filters])
 
-  // Extract unique genres from collection
   const genres = useMemo(() => {
     const all = items
       .flatMap((item) => item.genre?.split(', ') ?? [])
@@ -61,9 +62,12 @@ export function useCollectionFilter(items: CollectionItem[]) {
     return [...new Set(all)].sort()
   }, [items])
 
-  // Extract unique formats from collection
   const formats = useMemo(() => {
     return [...new Set(items.map((item) => item.format))].sort()
+  }, [items])
+
+  const mpaaRatings = useMemo(() => {
+    return [...new Set(items.map((item) => item.mpaa_rating).filter(Boolean))].sort() as string[]
   }, [items])
 
   const hasActiveFilters = Object.values(filters).some(Boolean)
@@ -81,6 +85,7 @@ export function useCollectionFilter(items: CollectionItem[]) {
     filtered,
     genres,
     formats,
+    mpaaRatings,
     hasActiveFilters,
     setFilter,
     clearFilters,

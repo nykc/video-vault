@@ -37,10 +37,8 @@ export function CollectionCard({ item }: { item: CollectionItem }) {
 
   return (
     <div className="border border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-primary)] transition-colors">
-      
-      {/* Main row */}
+
       <div className="flex gap-3 p-3">
-        {/* Poster */}
         <div className="w-16 h-24 flex-shrink-0 overflow-hidden border border-[var(--color-border)]" style={{ backgroundColor: 'var(--surface)' }}>
           {posterUrl ? (
             <Image src={posterUrl} alt={item.title} width={64} height={96} className="object-cover w-full h-full" />
@@ -51,7 +49,6 @@ export function CollectionCard({ item }: { item: CollectionItem }) {
           )}
         </div>
 
-        {/* Info */}
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           <p
             className="font-mono text-sm font-bold text-[var(--color-primary)] truncate"
@@ -72,6 +69,11 @@ export function CollectionCard({ item }: { item: CollectionItem }) {
 
           <div className="flex items-center gap-2 flex-wrap">
             <span className={`font-mono text-[10px] border px-1.5 py-0.5 ${formatStyle}`}>{item.format}</span>
+            {item.mpaa_rating && (
+              <span className="font-mono text-[10px] border px-1.5 py-0.5 border-[var(--color-border)] text-[var(--color-muted)]">
+                {item.mpaa_rating}
+              </span>
+            )}
             {item.condition && (
               <span className="font-mono text-[10px] text-[var(--color-muted)]">{item.condition}</span>
             )}
@@ -86,7 +88,6 @@ export function CollectionCard({ item }: { item: CollectionItem }) {
           )}
         </div>
 
-        {/* Actions */}
         <div className="flex flex-col justify-between items-end flex-shrink-0">
           <button
             onClick={handleDelete}
@@ -104,7 +105,6 @@ export function CollectionCard({ item }: { item: CollectionItem }) {
         </div>
       </div>
 
-      {/* Expanded details */}
       {expanded && (
         <div className="px-3 pb-3 border-t border-[var(--color-border)] pt-3 flex flex-col gap-2">
           {item.overview && (

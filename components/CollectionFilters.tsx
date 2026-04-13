@@ -15,6 +15,7 @@ type Props = {
   filters: FilterState
   genres: string[]
   formats: string[]
+  mpaaRatings: string[]
   hasActiveFilters: boolean
   onFilter: (key: keyof FilterState, value: string) => void
   onClear: () => void
@@ -26,6 +27,7 @@ export function CollectionFilters({
   filters,
   genres,
   formats,
+  mpaaRatings,
   hasActiveFilters,
   onFilter,
   onClear,
@@ -39,7 +41,6 @@ export function CollectionFilters({
   return (
     <div className="flex flex-col gap-3 mb-6 border border-[var(--color-border)] p-4" style={{ backgroundColor: 'var(--surface)' }}>
 
-      {/* Text search */}
       <div className="flex items-center border px-3" style={{ borderColor: 'var(--border)' }}>
         <span className="font-mono text-xs mr-2" style={{ color: 'var(--color-primary)' }}>FILTER{'>'}</span>
         <input
@@ -59,7 +60,6 @@ export function CollectionFilters({
         )}
       </div>
 
-      {/* Decades */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="font-mono text-[10px] text-[var(--color-muted)] w-16">DECADE</span>
         {DECADES.map((d) => (
@@ -73,7 +73,6 @@ export function CollectionFilters({
         ))}
       </div>
 
-      {/* Genres */}
       {genres.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-mono text-[10px] text-[var(--color-muted)] w-16">GENRE</span>
@@ -89,7 +88,6 @@ export function CollectionFilters({
         </div>
       )}
 
-      {/* Formats */}
       {formats.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-mono text-[10px] text-[var(--color-muted)] w-16">FORMAT</span>
@@ -105,7 +103,21 @@ export function CollectionFilters({
         </div>
       )}
 
-      {/* Status bar */}
+      {mpaaRatings.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-mono text-[10px] text-[var(--color-muted)] w-16">RATING</span>
+          {mpaaRatings.map((r) => (
+            <button
+              key={r}
+              className={`${chipBase} ${filters.mpaa === r ? chipActive : chipInactive}`}
+              onClick={() => onFilter('mpaa', filters.mpaa === r ? '' : r)}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <span className="font-mono text-[10px] text-[var(--color-muted)]">
           {hasActiveFilters ? `${filteredCount} of ${totalCount} titles` : `${totalCount} titles`}

@@ -98,4 +98,8 @@ function runMigrations(db: Database.Database) {
 
     db.prepare('INSERT INTO migrations (version) VALUES (?)').run(2)
   }
+  if (currentVersion < 3) {
+    db.exec(`ALTER TABLE movies ADD COLUMN mpaa_rating TEXT;`)
+    db.prepare('INSERT INTO migrations (version) VALUES (?)').run(3)
+  }
 }
