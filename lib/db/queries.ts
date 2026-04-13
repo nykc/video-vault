@@ -16,8 +16,8 @@ export type CollectionItem = {
   title: string
   year: number | null
   poster_path: string | null
-  format: string
-  condition: string | null
+  format: 'DVD' | 'Blu-ray' | '4K' | 'VHS' | 'Digital'
+  condition: 'Brand New' | 'Like New' | 'Very Good' | 'Good' | 'Acceptable' | null
   notes: string | null
   created_at: string
 }
