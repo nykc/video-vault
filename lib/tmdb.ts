@@ -22,6 +22,7 @@ export type TMDBMovieDetails = TMDBMovie & {
   genres: { id: number; name: string }[]
   credits: {
     crew: { job: string; name: string }[]
+    cast: { name: string }[]
   }
 }
 

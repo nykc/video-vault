@@ -1,4 +1,5 @@
 'use client'
+
 import { useState } from 'react'
 import Image from 'next/image'
 import { useQueryClient } from '@tanstack/react-query'
@@ -15,7 +16,7 @@ const FORMAT_COLORS: Record<string, string> = {
 }
 
 export function CollectionCard({ item }: { item: CollectionItem }) {
-  const [hovered, setHovered] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const queryClient = useQueryClient()
 
@@ -35,51 +36,93 @@ export function CollectionCard({ item }: { item: CollectionItem }) {
   }
 
   return (
-    <div
-      className="relative flex gap-3 p-3 border border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-primary)] transition-colors"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {/* Delete button */}
-      {hovered && (
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="absolute top-1 right-1 font-mono text-[10px] text-red-400 border border-red-400/40 px-1 hover:bg-red-400/10 transition-colors"
-        >
-          {deleting ? '...' : '[X]'}
-        </button>
+    <div className="border border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-primary)] transition-colors">
+      
+      {/* Main row */}
+      <div className="flex gap-3 p-3">
+        {/* Poster */}
+        <div className="w-16 h-24 flex-shrink-0 overflow-hidden border border-[var(--color-border)]" style={{ backgroundColor: 'var(--surface)' }}>
+          {posterUrl ? (
+            <Image src={posterUrl} alt={item.title} width={64} height={96} className="object-cover w-full h-full" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="font-mono text-[8px] text-[var(--color-muted)] text-center leading-tight px-1">[ NO IMAGE ]</span>
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="flex flex-col gap-1 min-w-0 flex-1">
+          <p
+            className="font-mono text-sm font-bold text-[var(--color-primary)] truncate"
+            style={{ textShadow: '0 0 8px var(--color-primary)' }}
+          >
+            {item.title}
+          </p>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-xs text-[var(--color-muted)]">{item.year ?? '----'}</span>
+            {item.runtime && (
+              <span className="font-mono text-xs text-[var(--color-muted)]">{item.runtime}m</span>
+            )}
+            {item.tmdb_rating && (
+              <span className="font-mono text-xs text-[var(--color-muted)]">★ {item.tmdb_rating.toFixed(1)}</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`font-mono text-[10px] border px-1.5 py-0.5 ${formatStyle}`}>{item.format}</span>
+            {item.condition && (
+              <span className="font-mono text-[10px] text-[var(--color-muted)]">{item.condition}</span>
+            )}
+          </div>
+
+          {item.genre && (
+            <p className="font-mono text-[10px] text-[var(--color-muted)] truncate">{item.genre}</p>
+          )}
+
+          {item.director && (
+            <p className="font-mono text-[10px] text-[var(--color-muted)] truncate">DIR: {item.director}</p>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col justify-between items-end flex-shrink-0">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="font-mono text-[10px] text-red-400 border border-red-400/40 px-1 hover:bg-red-400/10 transition-colors"
+          >
+            {deleting ? '...' : '[X]'}
+          </button>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="font-mono text-[10px] text-[var(--color-muted)] border border-[var(--color-border)] px-1 hover:border-[var(--color-primary)] transition-colors"
+          >
+            {expanded ? '[-]' : '[+]'}
+          </button>
+        </div>
+      </div>
+
+      {/* Expanded details */}
+      {expanded && (
+        <div className="px-3 pb-3 border-t border-[var(--color-border)] pt-3 flex flex-col gap-2">
+          {item.overview && (
+            <p className="font-mono text-xs text-[var(--color-muted)] leading-relaxed">{item.overview}</p>
+          )}
+          {item.cast && (
+            <p className="font-mono text-[10px] text-[var(--color-muted)]">
+              <span style={{ color: 'var(--color-primary)' }}>CAST: </span>{item.cast}
+            </p>
+          )}
+          {item.notes && (
+            <p className="font-mono text-[10px] text-[var(--color-muted)]">
+              <span style={{ color: 'var(--color-primary)' }}>NOTES: </span>{item.notes}
+            </p>
+          )}
+        </div>
       )}
 
-      {/* Poster */}
-      <div className="w-16 h-24 flex-shrink-0 flex items-center justify-center bg-black/40 border border-[var(--color-border)]">
-        {posterUrl ? (
-          <Image src={posterUrl} alt={item.title} width={64} height={96} className="object-cover w-full h-full" />
-        ) : (
-          <span className="font-mono text-[8px] text-[var(--color-muted)] text-center leading-tight px-1">
-            [ NO<br />IMAGE ]
-          </span>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="flex flex-col gap-1 min-w-0">
-        <p className="font-mono text-sm font-bold text-[var(--color-primary)] truncate"
-           style={{ textShadow: '0 0 8px var(--color-primary)' }}>
-          {item.title}
-        </p>
-        <p className="font-mono text-xs text-[var(--color-muted)]">
-          {item.year ?? '----'}
-        </p>
-        <span className={`font-mono text-[10px] border px-1.5 py-0.5 w-fit ${formatStyle}`}>
-          {item.format}
-        </span>
-        {item.condition && (
-          <p className="font-mono text-[10px] text-[var(--color-muted)]">
-            {item.condition}
-          </p>
-        )}
-      </div>
     </div>
   )
 }

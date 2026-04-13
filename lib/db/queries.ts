@@ -1,8 +1,15 @@
 import { getDatabase } from './database'
-import type { TMDBMovie } from '@/lib/tmdb'
+import { getMovieDetails } from '@/lib/tmdb'
 
 export type AddItemInput = {
-  tmdbMovie?: TMDBMovie
+  tmdbMovie?: {
+    id: number
+    title: string
+    release_date: string
+    poster_path: string | null
+    backdrop_path: string | null
+    overview: string
+  }
   manualTitle?: string
   manualYear?: string
   format: string
@@ -16,13 +23,20 @@ export type CollectionItem = {
   title: string
   year: number | null
   poster_path: string | null
-  format: 'DVD' | 'Blu-ray' | '4K' | 'VHS' | 'Digital'
-  condition: 'Brand New' | 'Like New' | 'Very Good' | 'Good' | 'Acceptable' | null
+  format: string
+  condition: string | null
   notes: string | null
+  overview: string | null
+  runtime: number | null
+  genre: string | null
+  director: string | null
+  cast: string | null
+  tmdb_rating: number | null
+  keywords: string | null
   created_at: string
 }
 
-export function addMovieToCollection(input: AddItemInput): void {
+export async function addMovieToCollection(input: AddItemInput): Promise<void> {
   const db = getDatabase()
 
   const title = input.tmdbMovie?.title ?? input.manualTitle ?? 'Unknown'
@@ -40,16 +54,38 @@ export function addMovieToCollection(input: AddItemInput): void {
     if (existing) {
       movieId = existing.id
     } else {
+      // Fetch full details from TMDB
+      const details = await getMovieDetails(input.tmdbMovie.id)
+
+      const director = details.credits?.crew
+        ?.filter((c) => c.job === 'Director')
+        .map((c) => c.name)
+        .join(', ') ?? null
+
+      const cast = details.credits?.cast
+        ?.slice(0, 10)
+        .map((c: { name: string }) => c.name)
+        .join(', ') ?? null
+
+      const genres = details.genres?.map((g) => g.name).join(', ') ?? null
+
       const result = db.prepare(`
-        INSERT INTO movies (tmdb_id, title, year, poster_path, backdrop_path, overview)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO movies (
+          tmdb_id, title, year, poster_path, backdrop_path,
+          overview, runtime, genre, director, cast, tmdb_rating
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         input.tmdbMovie.id,
         title,
         year,
         input.tmdbMovie.poster_path ?? null,
         input.tmdbMovie.backdrop_path ?? null,
-        input.tmdbMovie.overview ?? null
+        details.overview ?? null,
+        details.runtime ?? null,
+        genres,
+        director,
+        cast,
+        details.vote_average ?? null
       )
       movieId = result.lastInsertRowid as number
     }
@@ -75,6 +111,13 @@ export function getCollection(): CollectionItem[] {
       m.title,
       m.year,
       m.poster_path,
+      m.overview,
+      m.runtime,
+      m.genre,
+      m.director,
+      m.cast,
+      m.tmdb_rating,
+      m.keywords,
       ci.format,
       ci.condition,
       ci.notes,

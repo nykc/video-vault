@@ -4,7 +4,7 @@ import { addMovieToCollection } from '@/lib/db/queries'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    addMovieToCollection(body)
+    await addMovieToCollection(body)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error(error)

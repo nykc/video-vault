@@ -88,4 +88,14 @@ function runMigrations(db: Database.Database) {
 
     db.prepare('INSERT INTO migrations (version) VALUES (?)').run(1)
   }
+
+  if (currentVersion < 2) {
+    db.exec(`
+      ALTER TABLE movies ADD COLUMN cast TEXT;
+      ALTER TABLE movies ADD COLUMN tmdb_rating REAL;
+      ALTER TABLE movies ADD COLUMN keywords TEXT;
+    `)
+
+    db.prepare('INSERT INTO migrations (version) VALUES (?)').run(2)
+  }
 }
